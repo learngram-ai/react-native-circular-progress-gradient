@@ -29,7 +29,6 @@ export default class CircularProgress extends React.PureComponent {
       width,
       backgroundWidth,
       tintColor,
-      tintColorSecondary,
       tintTransparency,
       backgroundColor,
       style,
@@ -44,7 +43,11 @@ export default class CircularProgress extends React.PureComponent {
       renderCap,
       dashedBackground,
       dashedTint,
-      onPress
+      onPress,
+      isGradient= false,
+      gradientStops,
+      customRotationAxis,
+      id="gradient"
     } = this.props;
 
     const maxWidthCircle = backgroundWidth ? Math.max(width, backgroundWidth) : width;
@@ -105,14 +108,19 @@ export default class CircularProgress extends React.PureComponent {
 
     return (
       <View style={style}>
-       <TouchableOpacity activeOpacity={disabled ? 1 : 0.7} disabled={disabled} onPress={onPress}>
+        <TouchableOpacity activeOpacity={disabled ? 1 : 0.7} disabled={disabled} onPress={onPress}>
         <Svg width={size + padding} height={size + padding}>
-          {tintColorSecondary && (
+          {isGradient && (
             <Defs>
-              <LinearGradient id={'gradient'} x1={'0%'} y={'0%'} x2={'0%'} y2={'100%'}>
-                <Stop offset={'0%'} stopColor={tintColor} />
-                <Stop offset={'100%'} stopColor={tintColorSecondary} />
-              </LinearGradient>
+              <LinearGradient id={id} {...customRotationAxis}>
+            {gradientStops.map((gradientStop) => (
+              <Stop
+                offset={`${gradientStop.offset}`}
+                stopColor={gradientStop.color}
+                stopOpacity={gradientStop.opacity}
+              />
+            ))}
+          </LinearGradient>
             </Defs>
           )}
           <G rotation={rotation} originX={(size + padding) / 2} originY={(size + padding) / 2}>
@@ -130,7 +138,7 @@ export default class CircularProgress extends React.PureComponent {
             {fill > 0 && (
               <Path
                 d={circlePath}
-                stroke={tintColorSecondary ? 'url(#gradient)' : tintColor}
+                stroke={isGradient ? 'url(#gradient)' : tintColor}
                 strokeWidth={width}
                 strokeLinecap={lineCap}
                 strokeLinejoin={lineJoin}
@@ -142,7 +150,7 @@ export default class CircularProgress extends React.PureComponent {
           </G>
         </Svg>
         {children && <View style={localChildrenContainerStyle}>{children(fill)}</View>}
-       </TouchableOpacity>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -155,7 +163,7 @@ CircularProgress.propTypes = {
   width: PropTypes.number.isRequired,
   backgroundWidth: PropTypes.number,
   tintColor: PropTypes.string,
-  tintColorSecondary: PropTypes.string,
+  isGradient: PropTypes.bool,
   tintTransparency: PropTypes.bool,
   backgroundColor: PropTypes.string,
   rotation: PropTypes.number,
